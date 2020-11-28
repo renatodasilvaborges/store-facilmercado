@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useState, useMemo } from 'react'; 
 import { format } from 'date-fns';
-import { useAuth } from '../../hooks/auth';
 import api from '../../services/api';
 import { useToast } from '../../hooks/toast';
 import { useHistory, Link, useLocation } from 'react-router-dom';
@@ -19,15 +18,7 @@ import {
   Hour
 } from './styles'; 
 
-  interface MonthAvailabilityItem {
-    day: number;
-    available: boolean; 
-  }
 
-  interface RouteParams {
-    providerId: string;
-    productId: string;
-  }
   
   export interface Provider {
     id: string;
@@ -58,29 +49,18 @@ import {
     const [availability, setAvailability] = useState<AvailabilityItem[]>([]);
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [selectedHour, setSelectedHour] = useState(0);
-    const [providers, setProviders] = useState<Provider[]>([]);
-    const [selectedProvider, setSelectedProvider] = useState(providerId);
     const [products, setProducts] = useState<Product[]>([]);
     const [selectedProduct, setSelectedProducts] = useState();
-    const [monthAvailability, setMonthAvailability] = useState<MonthAvailabilityItem[]>([]); 
-
-    const { user } = useAuth();
   
     useEffect(() => {
-        api.get(`/products/${selectedProvider}/available`).then(response =>{
+        api.get(`/products/${providerId}/available`).then(response =>{
             setProducts(response.data);
         });
-    }, [selectedProvider]);
-  
-    useEffect(() => {
-        api.get('/providers').then(response => {
-          setProviders(response.data);
-        });
-      }, []);
+    }, [providerId]);
     
     useEffect(() => {
         api
-          .get(`/providers/${selectedProvider}/day-availability`, {
+          .get(`/providers/${providerId}/day-availability`, {
             params: {
               day: selectedDate.getDate(),
               month: selectedDate.getMonth() + 1,
@@ -90,7 +70,7 @@ import {
           .then(response => {
             setAvailability(response.data);
           });
-      }, [selectedDate, selectedProvider]);
+      }, [selectedDate, providerId]);
     
     const handleSelectProduct = useCallback((id) => {
       setSelectedProducts(id);
