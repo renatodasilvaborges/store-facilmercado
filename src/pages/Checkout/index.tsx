@@ -136,7 +136,7 @@ import {
         });
       
     }
-    }, [providerId, selectedProvider, selectedProduct, selectedDate, selectedHour, history, addToast]);
+    }, [providerId, selectedProduct, selectedDate, selectedHour, history, addToast]);
 
     const morningAvailability = useMemo(() => {
       return availability
