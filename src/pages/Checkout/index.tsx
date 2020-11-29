@@ -18,8 +18,11 @@ import {
   Hour
 } from './styles'; 
 
+  interface MonthAvailabilityItem {
+    day: number;
+    available: boolean; 
+  }
 
-  
   export interface Provider {
     id: string;
     name: string;
@@ -51,6 +54,8 @@ import {
     const [selectedHour, setSelectedHour] = useState(0);
     const [products, setProducts] = useState<Product[]>([]);
     const [selectedProduct, setSelectedProducts] = useState();
+    const [currentMonth, setCurrentMonth ] = useState(new Date()); 
+    const [monthAvailability, setMonthAvailability] = useState<MonthAvailabilityItem[]>([]);
   
     useEffect(() => {
         api.get(`/products/${providerId}/available`).then(response =>{
@@ -87,6 +92,10 @@ import {
       setSelectedHour(hour);
     }, []);
   
+    const handleMonthChange = useCallback((month: Date) => {
+      setCurrentMonth(month); 
+  }, []);
+
     const handleCreateAppointment = useCallback(async () => {
       try {
         const date = new Date(selectedDate);
@@ -138,6 +147,31 @@ import {
         }));
     }, [availability]);
   
+    useEffect(() => {
+      api.get(`/providers/${providerId}/month-availability`, {
+          params: {
+              year: currentMonth.getFullYear(), 
+              month: currentMonth.getMonth() + 1,
+          }
+      }).then(response => {
+          setMonthAvailability(response.data); 
+      }); 
+  }, [currentMonth, providerId]); 
+
+    const disabledDays = useMemo(() => {
+      const dates = monthAvailability
+      .filter(monthDay => monthDay.available === false)
+      .map(monthDay => {
+          const year = currentMonth.getFullYear();
+          const month = currentMonth.getMonth(); 
+          
+          return new Date(year, month, monthDay.day); 
+      });
+
+      return dates; 
+
+  }, [currentMonth, monthAvailability]); 
+
     return (
       <Container>
 
@@ -188,11 +222,12 @@ import {
                   <DayPicker
                     weekdaysShort={['D', 'S', 'T', 'Q', 'Q', 'S', 'S']}
                     fromMonth={new Date()}
-                    disabledDays={[{ daysOfWeek: [0, 7]}]}
+                    disabledDays={[{ daysOfWeek: [0, 7]}, ...disabledDays ]}
                     modifiers={{
                       available: { daysOfWeek: [1, 2, 3, 4, 5, 6]}
                     }}
                     selectedDays={selectedDate}
+                    onMonthChange={handleMonthChange}
                     onDayClick={ handleDateChange }
                     months={
                             [
