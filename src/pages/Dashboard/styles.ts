@@ -133,6 +133,7 @@ export const Provider = styled.div`
     display: flex;
     align-items: center; 
     text-decoration: none;
+    margin-bottom: 28px; 
     
 
     & + div {
